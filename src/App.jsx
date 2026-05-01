@@ -1,86 +1,102 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 const STORAGE_KEY = "fitness-planner-data";
-const PRIORITY = ["upper", "legs", "fullbody", "cardio"];
+const PRIORITY = ["upper", "legs", "fullbody", "cardiocore", "cardio"];
 
 const DEFAULT_EXERCISE_INFO = {
-  u1: { tips: ["Stand with feet shoulder-width apart, arms fully extended", "Curl up by bending at the elbow only", "Squeeze at top, lower slowly over 2-3 seconds", "Keep elbows pinned to your sides"], videoId: "ykJmrZ5v0Oo" },
-  u2: { tips: ["Sit upright, dumbbells at sides with palms facing in", "Curl both dumbbells keeping the neutral grip", "Don't swing — isolate the bicep and brachialis", "Lower under control, full extension at bottom"], videoId: "zC3nLlEvin4" },
-  u3: { tips: ["Hold one dumbbell with both hands behind your head", "Keep upper arms vertical and close to ears", "Extend upward by straightening arms", "Lower slowly, feel the stretch in triceps"], videoId: "_gsUck-7M74" },
-  u4: { tips: ["Sit with back supported, dumbbells at shoulder height", "Press straight up until arms almost fully extended", "Don't lock out elbows at top", "Lower to ear level to protect the shoulder joint"], videoId: "qEwKCR5JCog" },
-  u5: { tips: ["Stand with dumbbells in front of thighs, palms facing you", "Raise arms straight forward to shoulder height", "Keep a slight bend in the elbows", "Lower slowly — don't let gravity do the work"], videoId: "gzDe-ELv14g" },
-  u6: { tips: ["Stand with dumbbells at sides, slight bend in elbows", "Raise arms out to sides until parallel with floor", "Lead with elbows, not hands", "Imagine pouring water from a jug at the top"], videoId: "3VcKaXpzqRo" },
-  u7: { tips: ["Lie flat on bench, dumbbells at chest level", "Press up and slightly inward so they nearly touch", "Keep shoulder blades pulled back and down", "Lower until elbows at 90 degrees or just below chest"], videoId: "VmB1G1K7v94" },
-  u8: { tips: ["One knee and hand on bench, back flat and parallel", "Pull dumbbell toward your hip, not shoulder", "Squeeze shoulder blade at top", "Lower fully, let the lat stretch at bottom"], videoId: "pYcpY20QaE8" },
-  l1: { tips: ["Hold dumbbell vertically at chest with both hands", "Squat keeping chest up and back straight", "Push knees out over toes, don't let them cave", "Drive through heels to stand back up"], videoId: "MeIiIdhvXT4" },
-  l2: { tips: ["Hold dumbbells at sides, face a knee-height bench", "Step up driving through heel of working leg", "Stand fully upright at top before stepping down", "Keep torso upright, don't lean forward"], videoId: "dQqApCGd5Ag" },
-  l3: { tips: ["Lie on your back, knees bent, feet flat on the floor", "Place a dumbbell across your hips (hold it with both hands)", "Drive through heels, squeeze glutes to lift hips up", "Pause at top, lower slowly without touching floor between reps"], videoId: "wPM8icPu6H8" },
-  l4: { tips: ["Stand holding a kettlebell at your side, on edge of a step", "Lower heels below the step for full stretch", "Rise onto balls of feet, squeeze calves hard at top", "2 seconds up, 2 seconds down — no bouncing"], videoId: "wxwY7GXxELc" },
-  l5: { tips: ["Hold dumbbells at sides, take a large step forward", "Lower until both knees at roughly 90 degrees", "Keep torso upright, core braced", "Push off front foot into next rep"], videoId: "D7KaRcUTQeE" },
-  c1: { tips: ["Set incline to 8-12% for incline walk", "For running, start comfortable and build up", "Good posture, don't hold handrails", "Aim for 130-150 bpm for steady state"], videoId: null },
-  c2: { tips: ["High plank position, hands under shoulders", "Drive one knee toward chest, quickly switch", "Keep hips level, don't pike up", "Move fast while maintaining form"], videoId: "nmwgirgXLYM" },
-  c3: { tips: ["Lie on back, knees bent, feet flat on floor", "Hands behind head, don't pull on neck", "Curl up until shoulder blades lift off", "Lower slowly with control"], videoId: "1fbU_MkV7NE" },
-  c4: { tips: ["Lie on back, legs extended, hands under lower back", "Lift both feet about 6 inches off ground", "Alternate kicking in small controlled movements", "Keep lower back pressed into floor"], videoId: "ANVdMDXRFfI" },
-  c5: { tips: ["Forearm plank, elbows under shoulders, body straight", "Squeeze glutes and brace core", "Don't let hips sag or pike up", "Breathe steadily, hold for target duration"], videoId: "ASdvN_XEl_c" },
-  c6: { tips: ["Lie on back, legs extended straight up", "Reach hands up and touch toes or shins", "Lift using abs, don't jerk neck forward", "Lower slowly, keeping legs vertical"], videoId: "9bR5Mpr5CAo" },
-  f1: { tips: ["Same form as Goblet Squats — see Leg Day"], videoId: "MeIiIdhvXT4" },
-  f2: { tips: ["Same form as Chest Press — see Upper Body"], videoId: "VmB1G1K7v94" },
-  f3: { tips: ["Same form as DB Row — see Upper Body"], videoId: "pYcpY20QaE8" },
-  f4: { tips: ["Same form as Shoulder Press — see Upper Body"], videoId: "qEwKCR5JCog" },
-  f5: { tips: ["Same form as Bicep Curls — see Upper Body"], videoId: "ykJmrZ5v0Oo" },
-  f6: { tips: ["Same form as Tricep Extension — see Upper Body"], videoId: "_gsUck-7M74" },
-  f7: { tips: ["Same form as Calf Raises — see Leg Day"], videoId: "wxwY7GXxELc" },
-  f8: { tips: ["Same form as Mountain Climbers — see Cardio"], videoId: "nmwgirgXLYM" },
-  f9: { tips: ["Same form as Flutter Kicks — see Cardio"], videoId: "ANVdMDXRFfI" },
-  f10: { tips: ["Same form as Plank — see Cardio"], videoId: "ASdvN_XEl_c" },
+  u1: { tips: ["Stand with feet shoulder-width apart, arms fully extended", "Curl up by bending at the elbow only", "Squeeze at top, lower slowly over 2-3 seconds", "Keep elbows pinned to your sides"], videoId: "kIcFg-R2fBg" },
+  u2: { tips: ["Sit upright, dumbbells at sides with palms facing in", "Curl both dumbbells keeping the neutral grip", "Don't swing — isolate the bicep and brachialis", "Lower under control, full extension at bottom"], videoId: "Cbs_X874AdU" },
+  u3: { tips: ["Hold one dumbbell with both hands behind your head", "Keep upper arms vertical and close to ears", "Extend upward by straightening arms", "Lower slowly, feel the stretch in triceps"], videoId: "Faou3M95lSE" },
+  u4: { tips: ["Sit with back supported, dumbbells at shoulder height", "Press straight up until arms almost fully extended", "Don't lock out elbows at top", "Lower to ear level to protect the shoulder joint"], videoId: "kK07IIiNfUg" },
+  u5: { tips: ["Stand with dumbbells in front of thighs, palms facing you", "Raise arms straight forward to shoulder height", "Keep a slight bend in the elbows", "Lower slowly — don't let gravity do the work"], videoId: "Ds_6BYeGyQM" },
+  u6: { tips: ["Stand with dumbbells at sides, slight bend in elbows", "Raise arms out to sides until parallel with floor", "Lead with elbows, not hands", "Imagine pouring water from a jug at the top"], videoId: "QhRitwfGAuI" },
+  u7: { tips: ["Lie flat on bench, dumbbells at chest level", "Press up and slightly inward so they nearly touch", "Keep shoulder blades pulled back and down", "Lower until elbows at 90 degrees or just below chest"], videoId: "6qu0csN7zCo" },
+  u8: { tips: ["One knee and hand on bench, back flat and parallel", "Pull dumbbell toward your hip, not shoulder", "Squeeze shoulder blade at top", "Lower fully, let the lat stretch at bottom"], videoId: "987UVfdVSC4" },
+  u9: { tips: ["Set the machine to offset your bodyweight by the listed amount", "Grip the handles slightly wider than shoulder width", "Pull up until chin clears the bar, controlled tempo", "Lower slowly to full arm extension — no dropping"], videoId: null },
+  l1: { tips: ["Hold dumbbell vertically at chest with both hands", "Squat keeping chest up and back straight", "Push knees out over toes, don't let them cave", "Drive through heels to stand back up"], videoId: "Hubihzon0Vw" },
+  l2: { tips: ["Hold dumbbells at sides, face a knee-height bench", "Step up driving through heel of working leg", "Stand fully upright at top before stepping down", "Keep torso upright, don't lean forward"], videoId: null },
+  l3: { tips: ["Lie on your back, knees bent, feet flat on the floor", "Place a dumbbell across your hips", "Drive through heels, squeeze glutes to lift hips up", "Pause at top, lower slowly"], videoId: "cKT2J4XuV4g" },
+  l4: { tips: ["Stand on edge of a step, holding a kettlebell", "Lower heels below the step for full stretch", "Rise onto balls of feet, squeeze calves at top", "2 seconds up, 2 seconds down"], videoId: null },
+  l5: { tips: ["Hold dumbbells at sides, take a large step forward", "Lower until both knees at roughly 90 degrees", "Keep torso upright, core braced", "Push off front foot into next rep"], videoId: "UQ6XW606Q6U" },
+  cc2: { tips: ["High plank position, hands under shoulders", "Drive one knee toward chest, quickly switch", "Keep hips level, don't pike up", "Move fast while maintaining form"], videoId: "DnB85HkfEMM" },
+  cc3: { tips: ["Lie on back, knees bent, feet flat on floor", "Hands behind head, don't pull on neck", "Curl up until shoulder blades lift off", "Lower slowly with control"], videoId: "LFSU9Jsv7Bk" },
+  cc4: { tips: ["Lie on back, legs extended, hands under lower back", "Lift both feet about 6 inches off ground", "Alternate kicking in small controlled movements", "Keep lower back pressed into floor"], videoId: "wgq78rYko-M" },
+  cc5: { tips: ["Forearm plank, elbows under shoulders, body straight", "Squeeze glutes and brace core", "Don't let hips sag or pike up", "Breathe steadily, hold for target duration"], videoId: "wQbF2aZKEMA" },
+  cc6: { tips: ["Lie on back, legs extended straight up", "Reach hands up and touch toes or shins", "Lift using abs, don't jerk neck forward", "Lower slowly, keeping legs vertical"], videoId: "PzaEjQOZcD4" },
+  f1: { tips: ["Same form as Goblet Squats — see Leg Day"], videoId: "Hubihzon0Vw" },
+  f2: { tips: ["Same form as Chest Press — see Upper Body"], videoId: "6qu0csN7zCo" },
+  f3: { tips: ["Same form as DB Row — see Upper Body"], videoId: "987UVfdVSC4" },
+  f4: { tips: ["Same form as Shoulder Press — see Upper Body"], videoId: "kK07IIiNfUg" },
+  f5: { tips: ["Same form as Bicep Curls — see Upper Body"], videoId: "kIcFg-R2fBg" },
+  f6: { tips: ["Same form as Tricep Extension — see Upper Body"], videoId: "Faou3M95lSE" },
+  f7: { tips: ["Same form as Calf Raises — see Leg Day"], videoId: null },
+  f8: { tips: ["Same form as Mountain Climbers — see Cardio + Core"], videoId: "DnB85HkfEMM" },
+  f9: { tips: ["Same form as Flutter Kicks — see Cardio + Core"], videoId: "wgq78rYko-M" },
+  f10: { tips: ["Same form as Plank — see Cardio + Core"], videoId: "wQbF2aZKEMA" },
 };
 
-const WORKOUT_TEMPLATES = [
-  { id: "upper", name: "Upper Body", tag: "Push & Pull", duration: 45, color: "#2563EB", accent: "#dbeafe", exercises: [
-    { id: "u1", name: "Dumbbell Bicep Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8, eachSide: true },
-    { id: "u2", name: "Seated Hammer Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8, eachSide: true },
+const DEFAULT_CARDIO_OPTIONS = [
+  { id: "ca1", name: "Les Mills Sprint (Spin)", icon: "🚴" },
+  { id: "ca2", name: "3K Run", icon: "🏃" },
+  { id: "ca3", name: "5K Run", icon: "🏃" },
+  { id: "ca4", name: "Stepper — 20 min intervals", icon: "🪜" },
+  { id: "ca5", name: "Stepper — 30 min steady", icon: "🪜" },
+  { id: "ca6", name: "Football", icon: "⚽" },
+  { id: "ca7", name: "Padel", icon: "🎾" },
+  { id: "ca8", name: "Badminton", icon: "🏸" },
+  { id: "ca9", name: "Incline Treadmill Walk", icon: "🚶" },
+  { id: "ca10", name: "HIIT Session", icon: "⚡" },
+];
+
+const DEFAULT_WORKOUT_TEMPLATES = [
+  { id: "upper", name: "Upper Body", tag: "Push & Pull", duration: 45, color: "#2563EB", exercises: [
+    { id: "u1", name: "Dumbbell Bicep Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8 },
+    { id: "u2", name: "Seated Hammer Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8 },
     { id: "u3", name: "Overhead Tricep Extension", muscle: "Triceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 10 },
-    { id: "u4", name: "Seated Shoulder Press", muscle: "Shoulders", sets: 3, repsMin: 8, repsMax: 10, defaultWeight: 8, eachSide: true },
-    { id: "u5", name: "Standing Front Raises", muscle: "Shoulders", sets: 3, repsMin: 12, repsMax: 12, defaultWeight: 6, eachSide: true },
-    { id: "u6", name: "Standing Lateral Raises", muscle: "Shoulders", sets: 3, repsMin: 12, repsMax: 15, defaultWeight: 6, eachSide: true },
-    { id: "u7", name: "Dumbbell Chest Press", muscle: "Chest", sets: 3, repsMin: 8, repsMax: 12, defaultWeight: 10, eachSide: true },
-    { id: "u8", name: "Single-Arm DB Row", muscle: "Back", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 10, eachSide: true },
+    { id: "u4", name: "Seated Shoulder Press", muscle: "Shoulders", sets: 3, repsMin: 8, repsMax: 10, defaultWeight: 8 },
+    { id: "u5", name: "Standing Front Raises", muscle: "Shoulders", sets: 3, repsMin: 12, repsMax: 12, defaultWeight: 6 },
+    { id: "u6", name: "Standing Lateral Raises", muscle: "Shoulders", sets: 3, repsMin: 12, repsMax: 15, defaultWeight: 6 },
+    { id: "u7", name: "Dumbbell Chest Press", muscle: "Chest", sets: 3, repsMin: 8, repsMax: 12, defaultWeight: 10 },
+    { id: "u8", name: "Single-Arm DB Row", muscle: "Back", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 10 },
+    { id: "u9", name: "Assisted Pull-Ups", muscle: "Back / Biceps", sets: 3, repsMin: 12, repsMax: 12, defaultWeight: 30 },
   ]},
-  { id: "legs", name: "Leg Day", tag: "Lower Body", duration: 40, color: "#e11d48", accent: "#ffe4e6", exercises: [
+  { id: "legs", name: "Leg Day", tag: "Lower Body", duration: 40, color: "#e11d48", exercises: [
     { id: "l1", name: "Goblet Squats", muscle: "Quads", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 14 },
-    { id: "l2", name: "Dumbbell Step-Ups", muscle: "Quads", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 8, eachSide: true },
-    { id: "l3", name: "Dumbbell Glute Bridges", muscle: "Glutes / Hamstrings", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 10, eachSide: true },
+    { id: "l2", name: "Dumbbell Step-Ups", muscle: "Quads", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 8 },
+    { id: "l3", name: "Dumbbell Glute Bridges", muscle: "Glutes / Hamstrings", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 10 },
     { id: "l4", name: "Standing Kettlebell Calf Raises", muscle: "Calves", sets: 4, repsMin: 15, repsMax: 20, defaultWeight: 24 },
-    { id: "l5", name: "Walking Lunges", muscle: "Quads / Glutes", sets: 2, repsMin: 12, repsMax: 12, defaultWeight: 6, eachSide: true },
+    { id: "l5", name: "Walking Lunges", muscle: "Quads / Glutes", sets: 2, repsMin: 12, repsMax: 12, defaultWeight: 6 },
   ]},
-  { id: "cardio", name: "Cardio + Core", tag: "Conditioning", duration: 35, color: "#ea580c", accent: "#ffedd5", exercises: [
-    { id: "c1", name: "Treadmill Session", muscle: "Cardio", sets: 1, repsMin: 20, repsMax: 30, defaultWeight: 0, unit: "min" },
-    { id: "c2", name: "Mountain Climbers", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
-    { id: "c3", name: "Sit Ups", muscle: "Core", sets: 3, repsMin: 15, repsMax: 20, defaultWeight: 0 },
-    { id: "c4", name: "Flutter Kicks", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
-    { id: "c5", name: "Plank", muscle: "Core", sets: 3, repsMin: 30, repsMax: 60, defaultWeight: 0, unit: "sec" },
-    { id: "c6", name: "Toe Touches", muscle: "Core", sets: 3, repsMin: 15, repsMax: 20, defaultWeight: 0 },
+  { id: "cardiocore", name: "Cardio + Core", tag: "Conditioning", duration: 35, color: "#ea580c", exercises: [
+    { id: "cc2", name: "Mountain Climbers", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
+    { id: "cc3", name: "Sit Ups", muscle: "Core", sets: 3, repsMin: 15, repsMax: 20, defaultWeight: 0 },
+    { id: "cc4", name: "Flutter Kicks", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
+    { id: "cc5", name: "Plank", muscle: "Core", sets: 3, repsMin: 30, repsMax: 60, defaultWeight: 0, unit: "sec" },
+    { id: "cc6", name: "Toe Touches", muscle: "Core", sets: 3, repsMin: 15, repsMax: 20, defaultWeight: 0 },
   ]},
-  { id: "fullbody", name: "Full Body", tag: "Compound", duration: 50, color: "#059669", accent: "#d1fae5", exercises: [
+  { id: "fullbody", name: "Full Body", tag: "Compound", duration: 50, color: "#059669", exercises: [
     { id: "f1", name: "Goblet Squats", muscle: "Quads", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 14 },
-    { id: "f2", name: "Dumbbell Chest Press", muscle: "Chest", sets: 3, repsMin: 8, repsMax: 12, defaultWeight: 10, eachSide: true },
-    { id: "f3", name: "Single-Arm DB Row", muscle: "Back", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 10, eachSide: true },
-    { id: "f4", name: "Seated Shoulder Press", muscle: "Shoulders", sets: 3, repsMin: 8, repsMax: 10, defaultWeight: 8, eachSide: true },
-    { id: "f5", name: "Dumbbell Bicep Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8, eachSide: true },
+    { id: "f2", name: "Dumbbell Chest Press", muscle: "Chest", sets: 3, repsMin: 8, repsMax: 12, defaultWeight: 10 },
+    { id: "f3", name: "Single-Arm DB Row", muscle: "Back", sets: 3, repsMin: 10, repsMax: 10, defaultWeight: 10 },
+    { id: "f4", name: "Seated Shoulder Press", muscle: "Shoulders", sets: 3, repsMin: 8, repsMax: 10, defaultWeight: 8 },
+    { id: "f5", name: "Dumbbell Bicep Curls", muscle: "Biceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 8 },
     { id: "f6", name: "Overhead Tricep Extension", muscle: "Triceps", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 10 },
     { id: "f7", name: "Standing Kettlebell Calf Raises", muscle: "Calves", sets: 3, repsMin: 15, repsMax: 20, defaultWeight: 12 },
     { id: "f8", name: "Mountain Climbers", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
     { id: "f9", name: "Flutter Kicks", muscle: "Core", sets: 3, repsMin: 20, repsMax: 20, defaultWeight: 0 },
     { id: "f10", name: "Plank", muscle: "Core", sets: 3, repsMin: 30, repsMax: 60, defaultWeight: 0, unit: "sec" },
   ]},
+  { id: "cardio", name: "Cardio / Sport", tag: "Activity", duration: 0, color: "#9333ea", isCardioCategory: true, exercises: [] },
 ];
 
-const DEFAULT_DATA = { exerciseWeights: {}, completedSessions: [], weightLog: [], personalBests: {}, settings: { units: "kg" }, weeklyPhotos: {}, currentStreak: 0, customVideos: {} };
+const DEFAULT_DATA = { exerciseWeights: {}, completedSessions: [], weightLog: [], personalBests: {}, settings: { units: "kg" }, weeklyPhotos: {}, currentStreak: 0, customVideos: {}, customWorkouts: null, cardioOptions: null };
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 const fmtTime = (s) => `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
 const getWeekNum = (d = new Date()) => { const s = new Date(d.getFullYear(), 0, 1); return Math.ceil(((d - s) / 86400000 + s.getDay() + 1) / 7); };
 const getMonday = (d) => { const dd = new Date(d); const day = dd.getDay(); dd.setDate(dd.getDate() - day + (day === 0 ? -6 : 1)); return dd; };
 const isSameWeek = (d1, d2) => getMonday(new Date(d1)).toDateString() === getMonday(new Date(d2)).toDateString();
+const genId = () => "x" + Math.random().toString(36).slice(2, 8);
+const getWeekStart = (d) => { const m = getMonday(new Date(d)); return m.toISOString().slice(0, 10); };
 
 function extractVideoId(urlOrId) {
   if (!urlOrId) return null;
@@ -97,6 +113,9 @@ function getExerciseInfo(exerciseId, customVideos = {}) {
   return { ...base, videoId: custom ? extractVideoId(custom) : base.videoId };
 }
 
+function getWorkoutTemplates(customWorkouts) { return customWorkouts || DEFAULT_WORKOUT_TEMPLATES; }
+function getCardioOptions(custom) { return custom || DEFAULT_CARDIO_OPTIONS; }
+
 function useAppData() {
   const [data, setData] = useState(DEFAULT_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -105,11 +124,12 @@ function useAppData() {
   return { data, update, loaded };
 }
 
-function getSuggested(sessions) {
+function getSuggested(sessions, templates) {
   const now = new Date().toISOString();
   const weekDone = sessions.filter((s) => isSameWeek(s.date, now)).map((s) => s.templateId);
-  for (const id of PRIORITY) { if (!weekDone.includes(id)) return WORKOUT_TEMPLATES.find((t) => t.id === id); }
-  return WORKOUT_TEMPLATES[0];
+  for (const id of PRIORITY) { if (!weekDone.includes(id) && templates.find((t) => t.id === id)) return templates.find((t) => t.id === id); }
+  for (const t of templates) { if (!weekDone.includes(t.id)) return t; }
+  return templates[0];
 }
 const I = {
   home: <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
@@ -136,6 +156,7 @@ const WORKOUT_LETTERS = {
   upper: "U",
   legs: "L",
   fullbody: "F",
+  cardiocore: "CC",
   cardio: "C",
 };
 
@@ -330,15 +351,104 @@ function SessionMode({ template, appData, onUpdate, onEnd }) {
     </div>
   );
 }
-function HomeTab({ appData, onStart }) {
+function CardioSession({ appData, onUpdate, onEnd }) {
+  const options = getCardioOptions(appData.cardioOptions);
+  const [selected, setSelected] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    if (!running) return;
+    const iv = setInterval(() => setElapsed((p) => p + 1), 1000);
+    return () => clearInterval(iv);
+  }, [running]);
+
+  const logActivity = () => {
+    const session = {
+      templateId: "cardio",
+      templateName: selected.name,
+      date: new Date().toISOString(),
+      duration: elapsed,
+      exercises: [{ id: selected.id, name: selected.name, weight: 0, completedSets: 1, totalSets: 1 }],
+      isCardio: true,
+    };
+    onUpdate({ completedSessions: [...(appData.completedSessions || []), session] });
+    setFinished(true);
+  };
+
+  if (finished) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "#f6f5f3", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Geist', -apple-system, sans-serif" }}>
+        <div style={{ textAlign: "center", padding: "0 32px" }}>
+          <p style={{ fontSize: 40, margin: "0 0 16px" }}>{selected.icon}</p>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111111", margin: "0 0 6px", fontFamily: "'Fraunces', serif" }}>{selected.name}</h2>
+          <p style={{ fontSize: 32, fontWeight: 700, color: "#111111", margin: "0 0 4px", fontFamily: "'JetBrains Mono', monospace" }}>{fmtTime(elapsed)}</p>
+          <p style={{ fontSize: 14, color: "#8d8880", margin: "0 0 32px" }}>Logged</p>
+          <button onClick={onEnd} style={{ padding: "14px 48px", borderRadius: 12, border: "none", background: "#111111", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Done</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selected) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "#f6f5f3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Geist', -apple-system, sans-serif" }}>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+        <button onClick={() => { setSelected(null); setElapsed(0); setRunning(false); }} style={{ position: "absolute", top: 16, left: 16, background: "none", border: "none", cursor: "pointer", color: "#83807a", padding: 8 }}>{I.back}</button>
+        <p style={{ fontSize: 48, margin: "0 0 12px" }}>{selected.icon}</p>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#111111", margin: "0 0 24px", fontFamily: "'Fraunces', serif" }}>{selected.name}</h2>
+        <p style={{ fontSize: 56, fontWeight: 700, color: "#111111", margin: "0 0 32px", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.02em" }}>{fmtTime(elapsed)}</p>
+        <div style={{ display: "flex", gap: 12 }}>
+          {!running ? (
+            <button onClick={() => setRunning(true)} style={{ padding: "14px 40px", borderRadius: 12, border: "none", background: "#9333ea", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>{elapsed > 0 ? "Resume" : "Start Timer"}</button>
+          ) : (
+            <button onClick={() => setRunning(false)} style={{ padding: "14px 40px", borderRadius: 12, border: "1px solid #ece9e4", background: "#fff", color: "#111111", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Pause</button>
+          )}
+        </div>
+        {elapsed > 0 && !running && (
+          <button onClick={logActivity} style={{ marginTop: 16, padding: "14px 40px", borderRadius: 12, border: "none", background: "#22c55e", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Log Activity</button>
+        )}
+        <p style={{ fontSize: 12, color: "#8d8880", marginTop: 24 }}>Timer is optional — you can log without it</p>
+        {!running && elapsed === 0 && (
+          <button onClick={() => { setElapsed(0); logActivity(); }} style={{ marginTop: 8, padding: "10px 24px", borderRadius: 10, border: "1px solid #ece9e4", background: "#fff", color: "#83807a", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Just log it (no timer)</button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "#f6f5f3", overflowY: "auto", fontFamily: "'Geist', -apple-system, sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+      <div style={{ padding: "16px 16px 0", display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={onEnd} style={{ background: "none", border: "none", cursor: "pointer", color: "#83807a", padding: 4 }}>{I.back}</button>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#111111", margin: 0, fontFamily: "'Fraunces', serif" }}>Cardio / Sport</h2>
+      </div>
+      <p style={{ padding: "8px 16px 0", fontSize: 13, color: "#8d8880", margin: 0 }}>Pick an activity</p>
+      <div style={{ padding: "12px 16px 100px" }}>
+        {options.map((opt) => (
+          <button key={opt.id} onClick={() => setSelected(opt)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 16px", background: "#fff", border: "1px solid #ece9e4", borderRadius: 14, marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+            <span style={{ fontSize: 28, lineHeight: 1 }}>{opt.icon}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "#111111" }}>{opt.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+function HomeTab({ appData, onStart, templates }) {
   const u = appData.settings.units || "kg";
   const sessions = appData.completedSessions || [];
   const weekSessions = sessions.filter((s) => isSameWeek(s.date, new Date().toISOString()));
-  const suggested = getSuggested(sessions);
+  const suggested = getSuggested(sessions, templates);
   const weights = (appData.weightLog || []).slice(-10);
   const last = weights[weights.length - 1];
   const prev = weights[weights.length - 2];
   const delta = last && prev ? (last.weight - prev.weight).toFixed(1) : null;
+  const [viewWeekOffset, setViewWeekOffset] = useState(0);
+  const viewWeekDate = useMemo(() => { const d = new Date(); d.setDate(d.getDate() - viewWeekOffset * 7); return d; }, [viewWeekOffset]);
+  const viewWeekNum = getWeekNum(viewWeekDate);
+  const viewWeekSessions = sessions.filter((s) => isSameWeek(s.date, viewWeekDate.toISOString()));
   const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
   const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   const doneThisWeek = new Set(weekSessions.map((s) => s.templateId));
@@ -378,11 +488,10 @@ function HomeTab({ appData, onStart }) {
             return (<div key={i} style={{ flex: 1, textAlign: "center" }}><div style={{ height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: done ? "#111111" : isToday ? "#f5f5f5" : "transparent", border: isToday && !done ? "1.5px solid #d4cec4" : "1.5px solid transparent" }}>{done ? <span style={{ color: "#fff" }}>{I.check}</span> : <span style={{ fontSize: 11, fontWeight: 500, color: isToday ? "#111111" : "#ccc" }}>{d}</span>}</div></div>);
           })}
         </div>
-        {PRIORITY.filter((id) => !doneThisWeek.has(id)).length > 0 && (
+        {templates.filter((t) => !doneThisWeek.has(t.id)).length > 0 && (
           <div style={{ marginTop: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {PRIORITY.filter((id) => !doneThisWeek.has(id)).map((id) => {
-              const t = WORKOUT_TEMPLATES.find((x) => x.id === id);
-              return (<button key={id} onClick={(e) => { e.stopPropagation(); onStart(t); }} style={{ padding: "6px 10px 6px 8px", borderRadius: 8, border: "1px solid #ece9e4", background: "#f6f5f3", fontSize: 12, fontWeight: 500, color: "#555", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            {templates.filter((t) => !doneThisWeek.has(t.id)).map((t) => {
+              return (<button key={t.id} onClick={(e) => { e.stopPropagation(); onStart(t); }} style={{ padding: "6px 10px 6px 8px", borderRadius: 8, border: "1px solid #ece9e4", background: "#f6f5f3", fontSize: 12, fontWeight: 500, color: "#555", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 18, height: 18, borderRadius: 5, background: t.color, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><WorkoutBadge id={t.id} size={11} /></span>
                 {t.name}
               </button>);
@@ -398,7 +507,7 @@ function HomeTab({ appData, onStart }) {
         <div style={S.card}>
           <p style={S.label}>Recent</p>
           {sessions.slice(-3).reverse().map((s, i) => {
-            const t = WORKOUT_TEMPLATES.find((x) => x.id === s.templateId);
+            const t = templates.find((x) => x.id === s.templateId);
             return (<div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < 2 ? "1px solid #eeebe6" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 26, height: 26, borderRadius: 7, background: t?.color || "#999", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}><WorkoutBadge id={s.templateId} size={14} /></div>
@@ -409,15 +518,42 @@ function HomeTab({ appData, onStart }) {
           })}
         </div>
       )}
+      {sessions.length > 0 && (
+        <div style={S.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <p style={S.label}>Week {viewWeekNum}</p>
+            <div style={{ display: "flex", gap: 4 }}>
+              <button onClick={() => setViewWeekOffset((p) => p + 1)} style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid #ece9e4", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#83807a", fontSize: 14 }}>{I.back}</button>
+              {viewWeekOffset > 0 && <button onClick={() => setViewWeekOffset((p) => p - 1)} style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid #ece9e4", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#83807a", fontSize: 14 }}>{I.right}</button>}
+              {viewWeekOffset > 0 && <button onClick={() => setViewWeekOffset(0)} style={{ padding: "4px 10px", borderRadius: 7, border: "1px solid #ece9e4", background: "#fff", cursor: "pointer", color: "#83807a", fontSize: 11, fontWeight: 600 }}>Now</button>}
+            </div>
+          </div>
+          {viewWeekSessions.length === 0 ? (
+            <p style={{ fontSize: 13, color: "#8d8880", margin: 0 }}>No workouts this week</p>
+          ) : (
+            viewWeekSessions.map((s, i) => {
+              const t = templates.find((x) => x.id === s.templateId);
+              return (<div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < viewWeekSessions.length - 1 ? "1px solid #eeebe6" : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: 7, background: t?.color || "#9333ea", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}><WorkoutBadge id={s.templateId} size={13} /></div>
+                  <div><p style={{ fontWeight: 600, fontSize: 13, color: "#111111", margin: 0 }}>{s.templateName}</p><p style={{ fontSize: 11, color: "#8d8880", margin: 0 }}>{new Date(s.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</p></div>
+                </div>
+                <span style={{ fontSize: 12, color: "#83807a", fontFamily: "'JetBrains Mono', monospace" }}>{s.duration > 0 ? fmtTime(s.duration) : ""}</span>
+              </div>);
+            })
+          )}
+          {viewWeekSessions.length > 0 && <p style={{ fontSize: 11, color: "#8d8880", marginTop: 8, marginBottom: 0 }}>{viewWeekSessions.length} workout{viewWeekSessions.length !== 1 ? "s" : ""} this week</p>}
+        </div>
+      )}
     </div>
   );
 }
-function WorkoutsTab({ appData, onStart }) {
+function WorkoutsTab({ appData, onStart, templates }) {
   const [sel, setSel] = useState(null);
   const [infoEx, setInfoEx] = useState(null);
   const u = appData.settings.units || "kg";
   if (sel) {
-    const t = WORKOUT_TEMPLATES.find((x) => x.id === sel);
+    const t = templates.find((x) => x.id === sel);
     return (
       <div style={{ padding: "0 16px 100px" }}>
         {infoEx && <ExerciseInfoModal exercise={infoEx} customVideos={appData.customVideos} onClose={() => setInfoEx(null)} />}
@@ -451,7 +587,7 @@ function WorkoutsTab({ appData, onStart }) {
   return (
     <div style={{ padding: "0 16px 24px" }}>
       <div style={{ padding: "20px 0 16px" }}><h1 style={{ fontSize: 32, fontWeight: 500, color: "#111111", margin: 0, letterSpacing: "-0.03em", fontFamily: "'Fraunces', serif" }}>Workouts</h1><p style={{ fontSize: 13, color: "#8d8880", margin: "4px 0 0" }}>4 training days</p></div>
-      {WORKOUT_TEMPLATES.map((t) => (
+      {templates.map((t) => (
         <div key={t.id} onClick={() => setSel(t.id)} style={{ ...S.card, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 42, height: 42, borderRadius: 11, background: t.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><WorkoutBadge id={t.id} size={20} /></div>
@@ -695,7 +831,7 @@ function PhotosTab({ appData, onUpdate }) {
     </div>
   );
 }
-function VideoEditorModal({ appData, onUpdate, onClose }) {
+function VideoEditorModal({ appData, onUpdate, onClose, templates }) {
   const [edits, setEdits] = useState({ ...(appData.customVideos || {}) });
   const [expanded, setExpanded] = useState(null);
 
@@ -718,7 +854,7 @@ function VideoEditorModal({ appData, onUpdate, onClose }) {
         </div>
 
         <div style={{ overflowY: "auto", flex: 1, padding: "10px 18px 0" }}>
-          {WORKOUT_TEMPLATES.map((t) => (
+          {templates.map((t) => (
             <div key={t.id} style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <div style={{ width: 18, height: 18, borderRadius: 5, background: t.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><WorkoutBadge id={t.id} size={11} /></div>
@@ -768,8 +904,236 @@ function VideoEditorModal({ appData, onUpdate, onClose }) {
   );
 }
 
-function SettingsTab({ appData, onUpdate }) {
+function CardioOptionsEditor({ appData, onUpdate, onClose }) {
+  const [options, setOptions] = useState(() => JSON.parse(JSON.stringify(getCardioOptions(appData.cardioOptions))));
+  const [newName, setNewName] = useState("");
+
+  const remove = (idx) => setOptions((p) => p.filter((_, i) => i !== idx));
+  const add = () => {
+    if (!newName.trim()) return;
+    setOptions((p) => [...p, { id: genId(), name: newName.trim(), icon: "🏋️" }]);
+    setNewName("");
+  };
+  const save = () => { onUpdate({ cardioOptions: options }); onClose(); };
+  const reset = () => { setOptions(JSON.parse(JSON.stringify(DEFAULT_CARDIO_OPTIONS))); };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, maxHeight: "85dvh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "16px 18px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eeebe6", flexShrink: 0 }}>
+          <div><p style={{ fontWeight: 700, fontSize: 16, color: "#111111", margin: 0 }}>Cardio Activities</p><p style={{ fontSize: 11, color: "#8d8880", margin: "2px 0 0" }}>Add or remove activities</p></div>
+          <button onClick={onClose} style={{ background: "#f6f5f3", border: "none", borderRadius: 10, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#83807a" }}>{I.x}</button>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1, padding: "10px 18px" }}>
+          {options.map((opt, i) => (
+            <div key={opt.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #eeebe6" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#111111" }}>{opt.name}</span>
+              </div>
+              <button onClick={() => remove(i)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #ece9e4", background: "#fff", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>{I.x}</button>
+            </div>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="New activity name" onKeyDown={(e) => e.key === "Enter" && add()} style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "1px solid #ece9e4", fontSize: 14, outline: "none", background: "#f6f5f3", color: "#111111" }} />
+            <button onClick={add} style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: "#9333ea", color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Add</button>
+          </div>
+        </div>
+        <div style={{ padding: "10px 18px calc(10px + env(safe-area-inset-bottom, 8px))", borderTop: "1px solid #eeebe6", display: "flex", gap: 8, flexShrink: 0 }}>
+          <button onClick={reset} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #ece9e4", background: "#fff", fontSize: 13, fontWeight: 600, color: "#83807a", cursor: "pointer" }}>Reset</button>
+          <button onClick={save} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#111111", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function ExerciseEditorModal({ appData, onUpdate, onClose, templates }) {
+  const [workouts, setWorkouts] = useState(() => JSON.parse(JSON.stringify(templates)));
+  const [editingEx, setEditingEx] = useState(null);
+  const [addingTo, setAddingTo] = useState(null);
+  const [newEx, setNewEx] = useState({ name: "", muscle: "", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 0, unit: "" });
+
+  const u = appData.settings.units || "kg";
+
+  const updateExField = (wIdx, eIdx, field, val) => {
+    setWorkouts((p) => {
+      const n = [...p];
+      const w = { ...n[wIdx], exercises: [...n[wIdx].exercises] };
+      w.exercises[eIdx] = { ...w.exercises[eIdx], [field]: val };
+      n[wIdx] = w;
+      return n;
+    });
+  };
+
+  const removeExercise = (wIdx, eIdx) => {
+    setWorkouts((p) => {
+      const n = [...p];
+      const w = { ...n[wIdx], exercises: [...n[wIdx].exercises] };
+      w.exercises.splice(eIdx, 1);
+      n[wIdx] = w;
+      return n;
+    });
+  };
+
+  const moveExercise = (wIdx, eIdx, dir) => {
+    setWorkouts((p) => {
+      const n = [...p];
+      const w = { ...n[wIdx], exercises: [...n[wIdx].exercises] };
+      const newIdx = eIdx + dir;
+      if (newIdx < 0 || newIdx >= w.exercises.length) return p;
+      [w.exercises[eIdx], w.exercises[newIdx]] = [w.exercises[newIdx], w.exercises[eIdx]];
+      n[wIdx] = w;
+      return n;
+    });
+  };
+
+  const addExercise = (wIdx) => {
+    if (!newEx.name.trim()) return;
+    setWorkouts((p) => {
+      const n = [...p];
+      const w = { ...n[wIdx], exercises: [...n[wIdx].exercises] };
+      w.exercises.push({
+        id: genId(),
+        name: newEx.name.trim(),
+        muscle: newEx.muscle.trim() || "General",
+        sets: parseInt(newEx.sets) || 3,
+        repsMin: parseInt(newEx.repsMin) || 10,
+        repsMax: parseInt(newEx.repsMax) || 12,
+        defaultWeight: parseFloat(newEx.defaultWeight) || 0,
+        unit: newEx.unit || "",
+      });
+      n[wIdx] = w;
+      return n;
+    });
+    setNewEx({ name: "", muscle: "", sets: 3, repsMin: 10, repsMax: 12, defaultWeight: 0, unit: "" });
+    setAddingTo(null);
+  };
+
+  const save = () => {
+    onUpdate({ customWorkouts: workouts });
+    onClose();
+  };
+
+  const resetDefaults = () => {
+    if (confirm("Reset all workouts to defaults? Your custom exercises will be lost.")) {
+      setWorkouts(JSON.parse(JSON.stringify(DEFAULT_WORKOUT_TEMPLATES)));
+    }
+  };
+
+  const inputStyle = { padding: "8px 10px", borderRadius: 8, border: "1px solid #ece9e4", fontSize: 13, outline: "none", background: "#fff", color: "#111111", width: "100%" };
+  const smallInput = { ...inputStyle, width: 60, textAlign: "center", ...S.mono };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(4px)" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, maxHeight: "92dvh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "16px 18px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eeebe6", flexShrink: 0 }}>
+          <div><p style={{ fontWeight: 700, fontSize: 16, color: "#111111", margin: 0 }}>Edit Workouts</p><p style={{ fontSize: 11, color: "#8d8880", margin: "2px 0 0" }}>Add, remove, or adjust exercises</p></div>
+          <button onClick={onClose} style={{ background: "#f6f5f3", border: "none", borderRadius: 10, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#83807a" }}>{I.x}</button>
+        </div>
+
+        <div style={{ overflowY: "auto", flex: 1, padding: "10px 18px 0" }}>
+          {workouts.map((t, wIdx) => (
+            <div key={t.id} style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 7, background: t.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><WorkoutBadge id={t.id} size={12} /></div>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "#111111", margin: 0 }}>{t.name}</p>
+                <span style={{ fontSize: 11, color: "#8d8880" }}>{t.exercises.length} exercises</span>
+              </div>
+
+              {t.exercises.map((ex, eIdx) => {
+                const isEditing = editingEx === `${wIdx}-${eIdx}`;
+                return (
+                  <div key={ex.id || eIdx} style={{ background: "#f6f5f3", borderRadius: 10, padding: "10px 12px", marginBottom: 4, border: "1px solid #ece9e4" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div onClick={() => setEditingEx(isEditing ? null : `${wIdx}-${eIdx}`)} style={{ flex: 1, cursor: "pointer" }}>
+                        <p style={{ fontWeight: 600, fontSize: 13, color: "#111111", margin: 0 }}>{ex.name}</p>
+                        <p style={{ fontSize: 11, color: "#8d8880", margin: "1px 0 0" }}>{ex.muscle} · {ex.sets} x {ex.repsMin === ex.repsMax ? ex.repsMin : `${ex.repsMin}-${ex.repsMax}`}{ex.unit === "sec" ? "s" : ex.unit === "min" ? " min" : ""}{ex.defaultWeight > 0 ? ` · ${ex.defaultWeight}${u}` : ""}</p>
+                      </div>
+                      <div style={{ display: "flex", gap: 2, flexShrink: 0 }}>
+                        {eIdx > 0 && <button onClick={() => moveExercise(wIdx, eIdx, -1)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #ece9e4", background: "#fff", fontSize: 11, cursor: "pointer", color: "#83807a", display: "flex", alignItems: "center", justifyContent: "center" }}>&#9650;</button>}
+                        {eIdx < t.exercises.length - 1 && <button onClick={() => moveExercise(wIdx, eIdx, 1)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #ece9e4", background: "#fff", fontSize: 11, cursor: "pointer", color: "#83807a", display: "flex", alignItems: "center", justifyContent: "center" }}>&#9660;</button>}
+                        <button onClick={() => removeExercise(wIdx, eIdx)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #ece9e4", background: "#fff", fontSize: 11, cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>{I.x}</button>
+                      </div>
+                    </div>
+                    {isEditing && (
+                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #ece9e4", display: "flex", flexDirection: "column", gap: 6 }}>
+                        <input value={ex.name} onChange={(e) => updateExField(wIdx, eIdx, "name", e.target.value)} placeholder="Exercise name" style={inputStyle} />
+                        <input value={ex.muscle} onChange={(e) => updateExField(wIdx, eIdx, "muscle", e.target.value)} placeholder="Muscle group" style={inputStyle} />
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 10, color: "#8d8880" }}>Sets</label>
+                            <input type="number" value={ex.sets} onChange={(e) => updateExField(wIdx, eIdx, "sets", parseInt(e.target.value) || 1)} style={smallInput} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 10, color: "#8d8880" }}>Rep min</label>
+                            <input type="number" value={ex.repsMin} onChange={(e) => updateExField(wIdx, eIdx, "repsMin", parseInt(e.target.value) || 1)} style={smallInput} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 10, color: "#8d8880" }}>Rep max</label>
+                            <input type="number" value={ex.repsMax} onChange={(e) => updateExField(wIdx, eIdx, "repsMax", parseInt(e.target.value) || 1)} style={smallInput} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: 10, color: "#8d8880" }}>Weight</label>
+                            <input type="number" value={ex.defaultWeight} onChange={(e) => updateExField(wIdx, eIdx, "defaultWeight", parseFloat(e.target.value) || 0)} style={smallInput} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {addingTo === wIdx ? (
+                <div style={{ background: "#f6f5f3", borderRadius: 10, padding: "12px 12px", marginTop: 4, border: "1.5px solid " + t.color }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <input value={newEx.name} onChange={(e) => setNewEx({ ...newEx, name: e.target.value })} placeholder="Exercise name" style={inputStyle} autoFocus />
+                    <input value={newEx.muscle} onChange={(e) => setNewEx({ ...newEx, muscle: e.target.value })} placeholder="Muscle group (e.g. Biceps)" style={inputStyle} />
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 10, color: "#8d8880" }}>Sets</label>
+                        <input type="number" value={newEx.sets} onChange={(e) => setNewEx({ ...newEx, sets: e.target.value })} style={smallInput} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 10, color: "#8d8880" }}>Rep min</label>
+                        <input type="number" value={newEx.repsMin} onChange={(e) => setNewEx({ ...newEx, repsMin: e.target.value })} style={smallInput} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 10, color: "#8d8880" }}>Rep max</label>
+                        <input type="number" value={newEx.repsMax} onChange={(e) => setNewEx({ ...newEx, repsMax: e.target.value })} style={smallInput} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: 10, color: "#8d8880" }}>Weight</label>
+                        <input type="number" value={newEx.defaultWeight} onChange={(e) => setNewEx({ ...newEx, defaultWeight: e.target.value })} style={smallInput} />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                      <button onClick={() => setAddingTo(null)} style={{ flex: 1, padding: 9, borderRadius: 8, border: "1px solid #ece9e4", background: "#fff", fontSize: 12, fontWeight: 600, color: "#83807a", cursor: "pointer" }}>Cancel</button>
+                      <button onClick={() => addExercise(wIdx)} style={{ flex: 2, padding: 9, borderRadius: 8, border: "none", background: t.color, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Add Exercise</button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setAddingTo(wIdx)} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1.5px dashed #d4cec4", background: "transparent", fontSize: 12, fontWeight: 500, color: "#8d8880", cursor: "pointer", marginTop: 4 }}>+ Add exercise</button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: "10px 18px calc(10px + env(safe-area-inset-bottom, 8px))", borderTop: "1px solid #eeebe6", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button onClick={resetDefaults} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #ece9e4", background: "#fff", fontSize: 13, fontWeight: 600, color: "#83807a", cursor: "pointer" }}>Reset defaults</button>
+            <button onClick={save} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#111111", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsTab({ appData, onUpdate, templates }) {
   const [showVideoEditor, setShowVideoEditor] = useState(false);
+  const [showCardioEditor, setShowCardioEditor] = useState(false);
+  const [showExerciseEditor, setShowExerciseEditor] = useState(false);
   const toggleUnits = () => onUpdate({ settings: { ...appData.settings, units: appData.settings.units === "kg" ? "lbs" : "kg" } });
   const resetData = () => { if (confirm("Delete all data? This cannot be undone.")) onUpdate({ ...DEFAULT_DATA }); };
   const exportData = () => {
@@ -783,10 +1147,13 @@ function SettingsTab({ appData, onUpdate }) {
   const totalH = Math.round(ss.reduce((a, s) => a + (s.duration || 0), 0) / 3600);
   const pbCount = Object.keys(appData.personalBests || {}).length;
   const customVideoCount = Object.keys(appData.customVideos || {}).length;
+  const isCustomWorkouts = !!appData.customWorkouts;
 
   return (
     <div style={{ padding: "0 16px 24px" }}>
-      {showVideoEditor && <VideoEditorModal appData={appData} onUpdate={onUpdate} onClose={() => setShowVideoEditor(false)} />}
+      {showCardioEditor && <CardioOptionsEditor appData={appData} onUpdate={onUpdate} onClose={() => setShowCardioEditor(false)} />}
+      {showVideoEditor && <VideoEditorModal appData={appData} onUpdate={onUpdate} onClose={() => setShowVideoEditor(false)} templates={templates} />}
+      {showExerciseEditor && <ExerciseEditorModal appData={appData} onUpdate={onUpdate} onClose={() => setShowExerciseEditor(false)} templates={templates} />}
       <div style={{ padding: "20px 0 16px" }}><h1 style={{ fontSize: 32, fontWeight: 500, color: "#111111", margin: 0, letterSpacing: "-0.03em", fontFamily: "'Fraunces', serif" }}>Settings</h1></div>
       <div style={S.card}>
         <p style={S.label}>All time</p>
@@ -798,7 +1165,9 @@ function SettingsTab({ appData, onUpdate }) {
       </div>
       <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", marginBottom: 10, border: "1px solid #ece9e4" }}>
         {[
-          { label: "Weight units", desc: `Currently ${(appData.settings.units || "kg").toUpperCase()}`, action: toggleUnits, right: <span style={{ padding: "5px 12px", borderRadius: 8, background: "#f5f5f5", fontWeight: 600, fontSize: 13, color: "#111111", ...S.mono }}>{(appData.settings.units || "kg").toUpperCase()}</span> },
+          { label: "Weight units", desc: `Currently ${(appData.settings.units || "kg").toUpperCase()}`, action: toggleUnits, right: <span style={{ padding: "5px 12px", borderRadius: 8, background: "#f6f5f3", fontWeight: 600, fontSize: 13, color: "#111111", ...S.mono }}>{(appData.settings.units || "kg").toUpperCase()}</span> },
+          { label: "Edit workouts", desc: isCustomWorkouts ? "Custom exercises active" : "Using default exercises", action: () => setShowExerciseEditor(true), right: <span style={{ fontSize: 12, color: "#83807a" }}>{I.right}</span> },
+          { label: "Cardio activities", desc: `${getCardioOptions(appData.cardioOptions).length} activities configured`, action: () => setShowCardioEditor(true), right: <span style={{ fontSize: 12, color: "#83807a" }}>{I.right}</span> },
           { label: "Exercise videos", desc: customVideoCount > 0 ? `${customVideoCount} custom video${customVideoCount > 1 ? "s" : ""}` : "Using default demo videos", action: () => setShowVideoEditor(true), right: <span style={{ fontSize: 12, color: "#83807a" }}>{I.right}</span> },
           { label: "Export data", desc: "Download JSON backup", action: exportData, right: <span style={{ fontSize: 12, color: "#83807a" }}>{I.right}</span> },
           { label: "Reset all data", desc: "Permanently delete everything", action: resetData, color: "#ef4444", right: <span style={{ fontSize: 12, color: "#ef4444" }}>{I.right}</span> },
@@ -817,16 +1186,24 @@ export default function App() {
   const { data, update, loaded } = useAppData();
   const [tab, setTab] = useState("home");
   const [session, setSession] = useState(null);
+  const templates = useMemo(() => getWorkoutTemplates(data.customWorkouts), [data.customWorkouts]);
+
   if (!loaded) return (
     <div style={{ height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f6f5f3" }}>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 32, height: 32, border: "2.5px solid #eee", borderTopColor: "#111111", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 14px" }} />
+        <div style={{ width: 32, height: 32, border: "2.5px solid #ece9e4", borderTopColor: "#111111", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 14px" }} />
         <p style={{ fontWeight: 700, color: "#111111", fontSize: 12, letterSpacing: "0.15em" }}>FITNESS PLANNER</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
+
+  // Cardio/Sport sessions use a different UI
+  if (session && session.isCardioCategory) {
+    return <CardioSession appData={data} onUpdate={update} onEnd={() => setSession(null)} />;
+  }
   if (session) return <SessionMode template={session} appData={data} onUpdate={update} onEnd={() => setSession(null)} />;
+
   const tabs = [
     { id: "home", label: "Home", icon: I.home },
     { id: "workouts", label: "Workouts", icon: I.dumbbell },
@@ -845,15 +1222,15 @@ export default function App() {
         ::-webkit-scrollbar { display: none; }
       `}</style>
       <div style={{ paddingBottom: 80 }}>
-        {tab === "home" && <HomeTab appData={data} onStart={(t) => setSession(t)} />}
-        {tab === "workouts" && <WorkoutsTab appData={data} onStart={(t) => setSession(t)} />}
+        {tab === "home" && <HomeTab appData={data} onStart={(t) => setSession(t)} templates={templates} />}
+        {tab === "workouts" && <WorkoutsTab appData={data} onStart={(t) => setSession(t)} templates={templates} />}
         {tab === "progress" && <ProgressTab appData={data} onUpdate={update} />}
         {tab === "photos" && <PhotosTab appData={data} onUpdate={update} />}
-        {tab === "settings" && <SettingsTab appData={data} onUpdate={update} />}
+        {tab === "settings" && <SettingsTab appData={data} onUpdate={update} templates={templates} />}
       </div>
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid #ece9e4", display: "flex", paddingBottom: "env(safe-area-inset-bottom, 8px)", zIndex: 90 }}>
         {tabs.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "10px 0 6px", background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "#111111" : "#c0c0c0", transition: "color 0.15s" }}>
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "10px 0 6px", background: "none", border: "none", cursor: "pointer", color: tab === t.id ? "#111111" : "#c7c2b8", transition: "color 0.15s" }}>
             {t.icon}
             <span style={{ fontSize: 10, fontWeight: tab === t.id ? 600 : 400, letterSpacing: "0.02em" }}>{t.label}</span>
           </button>
